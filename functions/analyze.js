@@ -97,4 +97,20 @@ export async function onRequest(context) {
         try {
             analysisJson = JSON.parse(analysisText);
         } catch (parseError) {
-            console.error('Failed to parse Gemini response as JSON
+            console.error('Failed to parse Gemini response as JSON:', analysisText);
+            throw new Error('Gemini가 반환한 텍스트를 JSON으로 변환하는 데 실패했습니다.');
+        }
+        
+        return new Response(JSON.stringify({ analysis: analysisJson }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+    } catch (e) {
+        console.error('Server-side exception:', e);
+        return new Response(JSON.stringify({ error: `서버 내부 오류: ${e.message}` }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+}
