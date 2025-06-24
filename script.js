@@ -8,11 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const resetButton = document.getElementById('reset-button');
     
+    // ⭐️ 기본 정보 섹션 DOM 요소 추가
+    const carInfoSection = document.getElementById('car-info-section');
     const lifestyleSection = document.getElementById('lifestyle-section');
     const vibeSection = document.getElementById('vibe-section');
     const memeChartCanvas = document.getElementById('memeChart');
     
-    // 차트 인스턴스를 저장할 변수
     let myMemeChart = null;
 
     // 이미지 업로드 이벤트 리스너
@@ -20,20 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = event.target.files[0];
         if (!file) return;
 
-        // UI 초기 상태로 설정
         uploadContainer.style.display = 'none';
         resultWrapper.style.display = 'block';
         resultsDiv.style.display = 'none';
         loader.style.display = 'block';
 
-        // 이미지 미리보기
         const reader = new FileReader();
-        reader.onload = (e) => {
-            imagePreview.src = e.target.result;
-        };
+        reader.onload = (e) => { imagePreview.src = e.target.result; };
         reader.readAsDataURL(file);
 
-        // 이미지를 Base64로 변환하여 서버로 전송
         const base64Image = await toBase64(file);
 
         try {
@@ -49,8 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            
-            // 결과 표시
             displayResults(data.analysis);
 
         } catch (error) {
@@ -65,16 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     resetButton.addEventListener('click', () => {
         uploadContainer.style.display = 'block';
         resultWrapper.style.display = 'none';
-        imageUpload.value = null; // 파일 선택 초기화
+        imageUpload.value = null; 
         
-        // 기존 차트가 있으면 파괴
         if (myMemeChart) {
             myMemeChart.destroy();
             myMemeChart = null;
         }
     });
 
-    // Base64 변환 헬퍼 함수
     const toBase64 = (file) => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -84,11 +76,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 분석 결과를 화면에 표시하는 함수
     function displayResults(analysis) {
-        if (!analysis || !analysis.car_model) {
+        if (!analysis || !analysis.car_info || !analysis.car_info.model) {
             resultsDiv.innerHTML = `<p style="color: red; text-align: center;">분석 결과를 가져올 수 없습니다.</p>`;
             resultsDiv.style.display = 'block';
             return;
         }
+        
+        // ⭐️ 0. 기본 차량 정보 섹션 채우기 (가장 먼저)
+        const { car_info } = analysis;
+        carInfoSection.innerHTML = `
+            <h3>기본 정보</h3>
+            <p><strong>🚘 차종:</strong> ${car_info.model || '정보 없음'}</p>
+            <p><strong>💰 가격대:</strong> ${car_info.price_range || '정보 없음'}</p>
+            <p><strong>🗓️ 출시 시기:</strong> ${car_info.release_period || '정보 없음'}</p>
+        `;
 
         // 1. 라이프스타일 섹션 채우기
         const { lifestyle } = analysis;
@@ -119,7 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const chartData = {
             labels: ['과시력', '양카력', '질투 유발력', '성공력', '패밀리력'],
             datasets: [{
-                label: analysis.car_model || '분석 결과',
+                // ⭐️ 차트 라벨을 car_info.model 로 변경
+                label: car_info.model || '분석 결과',
                 data: [
                     meme_index.show_off || 0,
                     meme_index.reckless || 0,
@@ -141,44 +143,25 @@ document.addEventListener('DOMContentLoaded', () => {
             type: 'radar',
             data: chartData,
             options: {
-                elements: {
-                    line: {
-                        borderWidth: 3
-                    }
-                },
+                elements: { line: { borderWidth: 3 } },
                 scales: {
                     r: {
-                        angleLines: {
-                            display: true
-                        },
+                        angleLines: { display: true },
                         suggestedMin: 0,
                         suggestedMax: 5,
-                        pointLabels: {
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            }
-                        },
-                        ticks: {
-                           stepSize: 1
-                        }
+                        pointLabels: { font: { size: 14, weight: 'bold' } },
+                        ticks: { stepSize: 1 }
                     }
                 },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                }
+                plugins: { legend: { position: 'top' } }
             }
         };
 
-        // 기존 차트가 있으면 파괴하고 새로 그리기
         if (myMemeChart) {
             myMemeChart.destroy();
         }
         myMemeChart = new Chart(memeChartCanvas, chartConfig);
 
-        // 모든 결과 섹션을 화면에 표시
         resultsDiv.style.display = 'block';
     }
 });

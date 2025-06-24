@@ -5,11 +5,15 @@ const createGeminiRequestBody = (base64Image) => ({
             "parts": [
                 {
                     "text": `
-                    너는 자동차로 사람의 페르소나를 분석하는 '카BTI' 전문가야. 유머와 '밈(meme)'을 섞어서 분석해줘.
-                    이 사진 속 자동차를 기반으로, 소유자의 페르소나를 아래 JSON 구조에 맞춰서 창의적이고 재치있게 분석해줘.
+                    너는 자동차로 사람의 페르소나를 분석하는 '카BTI' 전문가야. 정확한 정보와 유머, '밈(meme)'을 섞어서 분석해줘.
+                    이 사진 속 자동차를 기반으로, 아래 JSON 구조에 맞춰서 답변해줘.
 
                     {
-                      "car_model": "분석한 자동차 모델명 (세대 포함)",
+                      "car_info": {
+                        "model": "분석한 자동차 모델명 (세대 포함, 예: 기아 니로 1세대)",
+                        "price_range": "신차 또는 중고차 기준 예상 가격대 (KRW 기준)",
+                        "release_period": "사진 속 모델의 출시 기간 (예: 2016년 ~ 2022년)"
+                      },
                       "lifestyle": {
                         "playlist": "이 차에서 흘러나올 것 같은 음악 플레이리스트 (가수, 장르 등 구체적으로)",
                         "weekend_haunts": "주말에 이 차가 주로 나타날 것 같은 장소",
@@ -29,7 +33,8 @@ const createGeminiRequestBody = (base64Image) => ({
                       }
                     }
 
-                    만약 자동차 식별이 불가능하다면, "car_model" 필드에 "차종을 식별할 수 없습니다" 라고 답변하고 나머지 모든 필드는 null로 채워줘.
+                    먼저 'car_info' 섹션에 정확한 정보를 채워줘. 그 다음에 'lifestyle', 'vibe', 'meme_index'를 창의적으로 분석해줘.
+                    만약 자동차 식별이 불가능하다면, car_info.model 필드에 "차종을 식별할 수 없습니다" 라고 답변하고 나머지 모든 필드는 null로 채워줘.
                     `
                 },
                 {
@@ -47,6 +52,7 @@ const createGeminiRequestBody = (base64Image) => ({
 });
 
 
+// onRequest 함수는 이전과 동일하게 Flash 모델을 사용합니다.
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
         return new Response('잘못된 요청입니다.', { status: 405 });
@@ -66,7 +72,6 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ error: '이미지 데이터가 없습니다.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         }
         
-        // ⭐️ 모델을 gemini-1.5-flash-latest 로 변경했습니다 ⭐️
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
         const requestBody = createGeminiRequestBody(image);
 
