@@ -4,20 +4,32 @@ const createGeminiRequestBody = (base64Image) => ({
         {
             "parts": [
                 {
-                    // 1. 개선된 프롬프트 적용
                     "text": `
-                    Step 1: 이 사진 속 자동차의 제조사, 모델명, 세대(예: 1세대)를 최대한 자세히 식별해줘.
-                    Step 2: 만약 Step 1에서 차종을 성공적으로 식별했다면, 그 정보를 바탕으로 아래 JSON 형식에 맞춰서 답변해줘. 각 필드에 대한 정보가 확실하지 않다면 "정보 부족"이라고 명시해줘.
+                    너는 자동차로 사람의 페르소나를 분석하는 '카BTI' 전문가야. 유머와 '밈(meme)'을 섞어서 분석해줘.
+                    이 사진 속 자동차를 기반으로, 소유자의 페르소나를 아래 JSON 구조에 맞춰서 창의적이고 재치있게 분석해줘.
 
                     {
-                      "model": "식별된 모델명 (세대 포함)",
-                      "price": "신차 또는 중고차 기준 예상 가격대",
-                      "year": "사진 속 모델의 출시 기간 (예: 2016년~2022년)",
-                      "demographics": "주로 선호하는 소비층",
-                      "description": "차량의 주요 특징 및 간략한 종합 설명"
+                      "car_model": "분석한 자동차 모델명 (세대 포함)",
+                      "lifestyle": {
+                        "playlist": "이 차에서 흘러나올 것 같은 음악 플레이리스트 (가수, 장르 등 구체적으로)",
+                        "weekend_haunts": "주말에 이 차가 주로 나타날 것 같은 장소",
+                        "instagram_feed": "이 차주 인스타그램에 올라올 법한 게시물 특징 (#해시태그 포함)"
+                      },
+                      "vibe": {
+                        "fashion_style": "차주가 즐겨 입을 것 같은 패션 스타일 (브랜드, 아이템 등 구체적으로)",
+                        "kakaotalk_style": "카톡 말투나 자주 쓸 것 같은 이모티콘 특징",
+                        "inner_monologue": "이 차를 본 다른 사람의 솔직한 마음속 한마디"
+                      },
+                      "meme_index": {
+                        "show_off": "과시력 (남에게 보여주기 위한 성향). 1~5점.",
+                        "reckless": "양카력 (도로에서 왠지 험하게 운전할 것 같은 느낌). 1~5점.",
+                        "jealousy": "질투 유발력 (전 연인이 이 차를 타면 배 아플 것 같은 정도). 1~5점.",
+                        "success": "성공력 (경제적 성공의 아이콘으로 비치는 정도). 1~5점.",
+                        "family": "패밀리력 (가정적인 사람일 것 같은 느낌). 1~5점."
+                      }
                     }
 
-                    만약 Step 1에서 자동차 식별 자체가 불가능하다면, 모든 필드를 "판별 불가"로 채운 JSON을 반환해줘.
+                    만약 자동차 식별이 불가능하다면, "car_model" 필드에 "차종을 식별할 수 없습니다" 라고 답변하고 나머지 모든 필드는 null로 채워줘.
                     `
                 },
                 {
@@ -31,17 +43,11 @@ const createGeminiRequestBody = (base64Image) => ({
     ],
     "generationConfig": {
         "response_mime_type": "application/json"
-    },
-    // 안정적인 답변을 위해 temperature 값을 낮게 설정 (선택 사항)
-    "safetySettings": [
-        { "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE" },
-        { "category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE" },
-        { "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE" },
-        { "category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE" }
-    ]
+    }
 });
 
 
+// onRequest 함수는 이전과 동일하게 유지합니다.
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
         return new Response('잘못된 요청입니다.', { status: 405 });
@@ -58,32 +64,22 @@ export async function onRequest(context) {
     try {
         const { image } = await context.request.json();
         if (!image) {
-            return new Response(JSON.stringify({ error: '이미지 데이터가 없습니다.' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return new Response(JSON.stringify({ error: '이미지 데이터가 없습니다.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         }
         
-        // 2. gemini-1.5-pro-latest 모델을 사용하도록 URL 수정
-		const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
-        
-		const requestBody = createGeminiRequestBody(image);
+        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${geminiApiKey}`;
+        const requestBody = createGeminiRequestBody(image);
 
         const geminiResponse = await fetch(geminiApiUrl, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody),
         });
 
         if (!geminiResponse.ok) {
             const errorBody = await geminiResponse.text();
             console.error('Gemini API Error:', errorBody);
-            return new Response(JSON.stringify({ error: `Gemini API 오류: ${errorBody}` }), {
-                status: geminiResponse.status,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return new Response(JSON.stringify({ error: `Gemini API 오류: ${errorBody}` }), { status: geminiResponse.status, headers: { 'Content-Type': 'application/json' } });
         }
         
         const geminiData = await geminiResponse.json();
