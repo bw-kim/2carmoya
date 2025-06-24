@@ -65,9 +65,9 @@ export async function onRequest(context) {
         }
         
         // 2. gemini-1.5-pro-latest 모델을 사용하도록 URL 수정
-        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${geminiApiKey}`;
-
-        const requestBody = createGeminiRequestBody(image);
+		const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
+        
+		const requestBody = createGeminiRequestBody(image);
 
         const geminiResponse = await fetch(geminiApiUrl, {
             method: 'POST',
