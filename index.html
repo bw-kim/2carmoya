@@ -8,10 +8,50 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
     <div id="main-page">
+        <div class="community-post">
+            <div class="post-header">
+                <h2>형들 이 차 뭔지 알아?</h2>
+                <div class="post-meta">
+                    <span>익명의 유저 (작성자)</span>
+                    <span>방금 전</span>
+                </div>
+            </div>
+            <div class="post-body">
+                <img src="sample.png" alt="인스타그램에 올라온 자동차 사진">
+            </div>
+            <div class="post-comments">
+                <div class="comment author-comment">
+                    <b>작성자:</b> 아참.. 이거 친구가 궁금해 해서 여기 올린거야 😉
+                </div>
+                <div class="reply comment"><b>익명1:</b> 전</div>
+                <div class="reply comment"><b>익명2:</b> &nbsp;&nbsp;&nbsp;&nbsp;여</div>
+                <div class="reply comment"><b>익명3:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;친</div>
+                <div class="reply comment"><b>익명4:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;의</div>
+                <div class="reply comment"><b>익명5:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;현</div>
+                <div class="reply comment"><b>익명6:</b> &nbsp;&nbsp;&nbsp;&nbsp;남</div>
+                <div class="reply comment"><b>익명7:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;친</div>
+                <div class="reply comment"><b>익명8:</b> 차</div>
+            </div>
+            <button id="start-analysis-button" class="upload-label">...혹시 내 얘긴가? (분석 시작)</button>
         </div>
+    </div>
+
     <div id="upload-page" style="display:none;">
+        <div id="app-container">
+            <h1>자, 그 사진... 올려봐</h1>
+            <p>AI가 조용히, 그리고 날카롭게 알려줄게.<br>그 차가 어떤 차인지, 그리고 그 사람이 어떤 사람인지.</p>
+
+            <div class="upload-box" id="upload-container">
+                <label for="image-upload" class="upload-label">
+                    📷 사진 선택하기
+                </label>
+                <input type="file" id="image-upload" accept="image/*">
+            </div>
+             <button id="back-to-main-button" class="upload-label secondary">메인으로 돌아가기</button>
         </div>
+    </div>
 
     <div id="result-page" style="display:none;">
         <div id="app-container">
@@ -41,6 +81,7 @@
             </div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>

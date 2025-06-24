@@ -22,11 +22,27 @@ const createGeminiRequestBody = (base64Image) => ({
                           "features": "이 차의 핵심 특징이나 사람들이 열광하는 포인트"
                         }
                       ],
-                      "lifestyle": { /* ... lifestyle, vibe, meme_index는 이전과 동일 ... */ }
+                      "lifestyle": {
+                        "playlist": "이 차에서 흘러나올 것 같은 음악 플레이리스트",
+                        "weekend_haunts": "주말에 이 차가 주로 나타날 것 같은 장소",
+                        "instagram_feed": "이 차주 인스타그램에 올라올 법한 게시물 특징"
+                      },
+                      "vibe": {
+                        "fashion_style": "차주가 즐겨 입을 것 같은 패션 스타일",
+                        "car_scent": "차에서 날 것 같은 방향제나 향기",
+                        "go_to_coffee": "차주가 자주 마실 것 같은 커피 메뉴"
+                      },
+                      "meme_index": {
+                        "show_off": "과시력 (1~5점)",
+                        "reckless": "양카력 (1~5점)",
+                        "jealousy": "질투 유발력 (1~5점)",
+                        "success": "성공력 (1~5점)",
+                        "family": "패밀리력 (1~5점)"
+                      }
                     }
 
                     ### 지시사항 ###
-                    1. 이미지를 보고 자동차인지 아닌지 먼저 판단해줘. 자동차가 아니라면 'is_car'를 false로 설정하고 나머지 필드는 null로 채워줘.
+                    1. 이미지를 보고 자동차인지 아닌지 먼저 판단해줘. 자동차가 아니라면 'is_car'를 false로 설정하고 나머지 모든 필드는 null로 채워줘.
                     2. 'confidence'는 너의 추측에 대한 자신감을 0에서 100 사이의 숫자로 표현한 '적중률'이야. **사진이 흐리거나, 로고가 안보이거나, 특징이 명확하지 않으면 자신감(confidence) 수치를 솔직하고 과감하게 낮춰서 표현해야 해. 절대 예시 숫자 95를 그대로 쓰면 안돼.**
                     3. 1순위 후보의 'confidence'가 90 미만이라면, 2순위 후보를 'car_candidates' 배열에 추가해줘.
                     4. 'verdict'와 나머지 분석은 1순위 후보를 기준으로 작성해줘.
@@ -39,7 +55,6 @@ const createGeminiRequestBody = (base64Image) => ({
     "generationConfig": { "response_mime_type": "application/json" }
 });
 
-// onRequest 함수는 변경사항 없습니다. 이전과 동일합니다.
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
         return new Response('잘못된 요청입니다.', { status: 405 });
@@ -82,20 +97,4 @@ export async function onRequest(context) {
         try {
             analysisJson = JSON.parse(analysisText);
         } catch (parseError) {
-            console.error('Failed to parse Gemini response as JSON:', analysisText);
-            throw new Error('Gemini가 반환한 텍스트를 JSON으로 변환하는 데 실패했습니다.');
-        }
-        
-        return new Response(JSON.stringify({ analysis: analysisJson }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
-
-    } catch (e) {
-        console.error('Server-side exception:', e);
-        return new Response(JSON.stringify({ error: `서버 내부 오류: ${e.message}` }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-}
+            console.error('Failed to parse Gemini response as JSON
