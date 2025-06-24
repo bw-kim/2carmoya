@@ -131,16 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>${lifestyle.instagram_feed || '정보 없음'}</p>
         `;
 
-        // 2. 감성 & 디테일 섹션 채우기
+        // 2. 감성 & 디테일 섹션 채우기 (⭐️ 수정된 부분 ⭐️)
         const { vibe } = analysis;
         vibeSection.innerHTML = `
             <h3>2. 감성 & 디테일</h3>
             <h4>👕 '현남친' 패션 스타일</h4>
             <p>${vibe.fashion_style || '정보 없음'}</p>
-            <h4>💬 카톡 스타일</h4>
-            <p>${vibe.kakaotalk_style || '정보 없음'}</p>
-            <h4>🤫 내 마음속 한마디</h4>
-            <p>"${vibe.inner_monologue || '정보 없음'}"</p>
+            <h4>👃 차량 방향제 취향</h4>
+            <p>${vibe.car_scent || '정보 없음'}</p>
+            <h4>☕️ 자주 마실 것 같은 커피</h4>
+            <p>${vibe.go_to_coffee || '정보 없음'}</p>
         `;
 
         // 3. 밈 지수 차트 그리기

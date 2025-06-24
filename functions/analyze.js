@@ -25,8 +25,8 @@ const createGeminiRequestBody = (base64Image) => ({
                       },
                       "vibe": {
                         "fashion_style": "차주가 즐겨 입을 것 같은 패션 스타일",
-                        "kakaotalk_style": "카톡 말투나 자주 쓸 것 같은 이모티콘 특징",
-                        "inner_monologue": "이 차를 본 다른 사람의 솔직한 마음속 한마디"
+                        "car_scent": "차에서 날 것 같은 방향제나 향기",
+                        "go_to_coffee": "차주가 자주 마실 것 같은 커피 메뉴"
                       },
                       "meme_index": {
                         "show_off": "과시력 (1~5점)",
