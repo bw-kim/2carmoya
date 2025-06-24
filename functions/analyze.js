@@ -1,4 +1,3 @@
-// Gemini API에 보낼 요청 본문을 생성하는 함수
 const createGeminiRequestBody = (base64Image) => ({
     "contents": [
         {
@@ -9,6 +8,8 @@ const createGeminiRequestBody = (base64Image) => ({
                     이 사진 속 자동차를 기반으로, 아래 JSON 구조에 맞춰서 답변해줘.
 
                     {
+                      "is_car": true,
+                      "final_verdict": "모든 분석 결과를 한 문장으로 요약한 최종 판결",
                       "car_candidates": [
                         {
                           "model": "가장 유력한 자동차 모델명 (세대 포함)",
@@ -38,33 +39,24 @@ const createGeminiRequestBody = (base64Image) => ({
                     }
 
                     ### 지시사항 ###
-                    1.  먼저 사진 속 자동차를 분석해서 가장 유력한 후보 1개를 'car_candidates' 배열에 담아줘.
-                    2.  'confidence'는 너의 추측에 대한 자신감을 0에서 100 사이의 숫자로 표현한 '적중률'이야.
-                    3.  만약 1순위 후보의 'confidence'가 90 미만이라면, 2순위 후보를 배열에 추가해줘.
-                    4.  그 후 'lifestyle', 'vibe', 'meme_index'를 창의적으로 분석해줘. 이 분석은 1순위 후보를 기준으로 해줘.
-                    5.  자동차 식별이 불가능하다면, 'car_candidates' 배열에 confidence가 0인 객체 하나만 넣고 나머지 모든 필드는 null로 채워줘.
+                    1. 이미지를 보고 자동차인지 아닌지 먼저 판단해줘.
+                    2. 자동차가 맞다면: 'is_car'를 true로 설정하고 나머지 모든 필드를 채워줘.
+                    3. 자동차가 아니라면: 'is_car'를 false로 설정하고, 나머지 모든 필드는 null로 채워줘.
+                    4. 1순위 후보의 'confidence'가 90 미만이라면, 2순위 후보를 'car_candidates' 배열에 추가해줘.
+                    5. 'final_verdict'는 모든 분석 내용을 바탕으로 가장 임팩트 있는 한마디로 요약해줘.
                     `
                 },
-                {
-                    "inline_data": {
-                        "mime_type": "image/jpeg",
-                        "data": base64Image
-                    }
-                }
+                { "inline_data": { "mime_type": "image/jpeg", "data": base64Image } }
             ]
         }
     ],
-    "generationConfig": {
-        "response_mime_type": "application/json"
-    }
+    "generationConfig": { "response_mime_type": "application/json" }
 });
-
 
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
         return new Response('잘못된 요청입니다.', { status: 405 });
     }
-
     const geminiApiKey = context.env.GEMINI_API_KEY;
     if (!geminiApiKey) {
         return new Response(JSON.stringify({ error: '서버에 API 키가 설정되지 않았습니다.' }), {
@@ -72,7 +64,6 @@ export async function onRequest(context) {
             headers: { 'Content-Type': 'application/json' },
         });
     }
-    
     try {
         const { image } = await context.request.json();
         if (!image) {
@@ -81,7 +72,6 @@ export async function onRequest(context) {
         
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
         const requestBody = createGeminiRequestBody(image);
-
         const geminiResponse = await fetch(geminiApiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -95,7 +85,6 @@ export async function onRequest(context) {
         }
         
         const geminiData = await geminiResponse.json();
-
         if (!geminiData.candidates || !geminiData.candidates[0] || !geminiData.candidates[0].content.parts[0].text) {
             console.error('Unexpected Gemini response structure:', geminiData);
             throw new Error('Gemini로부터 예상치 못한 형식의 응답을 받았습니다.');
@@ -103,7 +92,6 @@ export async function onRequest(context) {
         
         const analysisText = geminiData.candidates[0].content.parts[0].text;
         let analysisJson;
-
         try {
             analysisJson = JSON.parse(analysisText);
         } catch (parseError) {

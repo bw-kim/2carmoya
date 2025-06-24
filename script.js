@@ -12,14 +12,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // 업로드 및 결과 표시 관련 DOM 요소
     const imageUpload = document.getElementById('image-upload');
     const imagePreview = document.getElementById('image-preview');
+    const loaderWrapper = document.getElementById('loader-wrapper');
+    const loadingText = document.getElementById('loading-text');
     const resultsDiv = document.getElementById('results');
-    const loader = document.getElementById('loader');
+    const errorSection = document.getElementById('error-section');
+    const finalVerdictSection = document.getElementById('final-verdict-section');
     const carInfoSection = document.getElementById('car-info-section');
     const lifestyleSection = document.getElementById('lifestyle-section');
     const vibeSection = document.getElementById('vibe-section');
     const memeChartCanvas = document.getElementById('memeChart');
     
     let myMemeChart = null;
+    let loadingInterval = null;
 
     // --- 페이지 전환 로직 ---
     startAnalysisButton.addEventListener('click', () => {
@@ -51,7 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadPage.style.display = 'none';
         resultPage.style.display = 'block';
         resultsDiv.style.display = 'none';
-        loader.style.display = 'block';
+        errorSection.style.display = 'none';
+        loaderWrapper.style.display = 'block';
+        startLoadingAnimation();
 
         const reader = new FileReader();
         reader.onload = (e) => { imagePreview.src = e.target.result; };
@@ -75,15 +81,33 @@ document.addEventListener('DOMContentLoaded', () => {
             displayResults(data.analysis);
 
         } catch (error) {
-            resultsDiv.style.display = 'block';
-            carInfoSection.innerHTML = `<p style="color: red; text-align: center;">오류: ${error.message}</p>`;
-            lifestyleSection.style.display = 'none';
-            vibeSection.style.display = 'none';
-            document.getElementById('meme-index-section').style.display = 'none';
+            displayError(error.message);
         } finally {
-            loader.style.display = 'none';
+            stopLoadingAnimation();
         }
     });
+
+    // --- 로딩 애니메이션 함수 ---
+    function startLoadingAnimation() {
+        const messages = [
+            "전여친 인스타 염탐 중...",
+            "AI가 현남친의 재력을 분석 중입니다...",
+            "차량 번호판으로 신상 터는 중... (농담입니다😉)",
+            "블랙박스 영상 확인 중... 혹시 뭐 찍힌 거 없죠?",
+            "심장 부여잡고 기다리는 중..."
+        ];
+        let messageIndex = 0;
+        loadingText.textContent = messages[messageIndex];
+        loadingInterval = setInterval(() => {
+            messageIndex = (messageIndex + 1) % messages.length;
+            loadingText.textContent = messages[messageIndex];
+        }, 2000);
+    }
+
+    function stopLoadingAnimation() {
+        clearInterval(loadingInterval);
+        loaderWrapper.style.display = 'none';
+    }
 
     const toBase64 = (file) => new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -92,20 +116,36 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onerror = (error) => reject(error);
     });
 
+    // --- 에러 표시 함수 ---
+    function displayError(message) {
+        resultsDiv.style.display = 'none';
+        errorSection.style.display = 'block';
+        errorSection.innerHTML = `<p style="color: red;">${message}</p>`;
+    }
+
     // --- 결과 표시 함수 ---
     function displayResults(analysis) {
-        if (!analysis || !analysis.car_candidates || analysis.car_candidates.length === 0) {
-            carInfoSection.innerHTML = `<p style="color: red; text-align: center;">분석 결과를 가져올 수 없습니다.</p>`;
-            resultsDiv.style.display = 'block';
+        if (!analysis) {
+            displayError('분석 결과를 가져올 수 없습니다.');
             return;
         }
 
-        // 모든 섹션을 다시 보이도록 설정
-        lifestyleSection.style.display = 'block';
-        vibeSection.style.display = 'block';
-        document.getElementById('meme-index-section').style.display = 'block';
-        
-        // 0. 기본 차량 정보 (후보군) 섹션 채우기
+        // 자동차가 아닌 사진 처리
+        if (analysis.is_car === false) {
+            resultsDiv.style.display = 'none';
+            errorSection.style.display = 'block';
+            errorSection.innerHTML = `
+                <img src="https://i.ibb.co/L8yT6T8/undraw-Question-re-1fy7.png" alt="질문하는 그림">
+                <h4>이건... 차가 아닌데요?</h4>
+                <p>자동차 사진을 올려주셔야<br>전여친의 현남친을 분석할 수 있어요!</p>
+            `;
+            return;
+        }
+
+        // 최종 판결 섹션
+        finalVerdictSection.innerHTML = `"${analysis.final_verdict || '분석 완료!'}"`;
+
+        // 기본 차량 정보 (후보군) 섹션
         carInfoSection.innerHTML = '<h3>기본 정보 (AI 추정)</h3>';
         analysis.car_candidates.forEach((car, index) => {
             carInfoSection.innerHTML += `
@@ -119,42 +159,37 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         });
 
-        // 1. 라이프스타일 섹션 채우기
-        const { lifestyle } = analysis;
+        // 라이프스타일 섹션
         lifestyleSection.innerHTML = `
             <h3>1. 라이프스타일 & 취미</h3>
             <h4>🎵 플레이리스트</h4>
-            <p>${lifestyle.playlist || '정보 없음'}</p>
+            <p>${analysis.lifestyle.playlist || '정보 없음'}</p>
             <h4>📍 주말 출몰 지역</h4>
-            <p>${lifestyle.weekend_haunts || '정보 없음'}</p>
+            <p>${analysis.lifestyle.weekend_haunts || '정보 없음'}</p>
             <h4>📱 인스타그램 피드</h4>
-            <p>${lifestyle.instagram_feed || '정보 없음'}</p>
+            <p>${analysis.lifestyle.instagram_feed || '정보 없음'}</p>
         `;
 
-        // 2. 감성 & 디테일 섹션 채우기 (⭐️ 수정된 부분 ⭐️)
-        const { vibe } = analysis;
+        // 감성 & 디테일 섹션
         vibeSection.innerHTML = `
             <h3>2. 감성 & 디테일</h3>
             <h4>👕 '현남친' 패션 스타일</h4>
-            <p>${vibe.fashion_style || '정보 없음'}</p>
+            <p>${analysis.vibe.fashion_style || '정보 없음'}</p>
             <h4>👃 차량 방향제 취향</h4>
-            <p>${vibe.car_scent || '정보 없음'}</p>
+            <p>${analysis.vibe.car_scent || '정보 없음'}</p>
             <h4>☕️ 자주 마실 것 같은 커피</h4>
-            <p>${vibe.go_to_coffee || '정보 없음'}</p>
+            <p>${analysis.vibe.go_to_coffee || '정보 없음'}</p>
         `;
 
-        // 3. 밈 지수 차트 그리기
+        // 밈 지수 차트
         const { meme_index } = analysis;
         const chartData = {
             labels: ['과시력', '양카력', '질투 유발력', '성공력', '패밀리력'],
             datasets: [{
                 label: analysis.car_candidates[0].model || '분석 결과',
                 data: [
-                    meme_index.show_off || 0,
-                    meme_index.reckless || 0,
-                    meme_index.jealousy || 0,
-                    meme_index.success || 0,
-                    meme_index.family || 0
+                    meme_index.show_off || 0, meme_index.reckless || 0,
+                    meme_index.jealousy || 0, meme_index.success || 0, meme_index.family || 0
                 ],
                 fill: true,
                 backgroundColor: 'rgba(26, 115, 232, 0.2)',
@@ -165,17 +200,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 pointHoverBorderColor: 'rgb(26, 115, 232)'
             }]
         };
-
         const chartConfig = {
-            type: 'radar',
-            data: chartData,
+            type: 'radar', data: chartData,
             options: {
                 elements: { line: { borderWidth: 3 } },
                 scales: {
                     r: {
                         angleLines: { display: true },
-                        suggestedMin: 0,
-                        suggestedMax: 5,
+                        suggestedMin: 0, suggestedMax: 5,
                         pointLabels: { font: { size: 14, weight: 'bold' } },
                         ticks: { stepSize: 1 }
                     }
@@ -184,9 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        if (myMemeChart) {
-            myMemeChart.destroy();
-        }
+        if (myMemeChart) myMemeChart.destroy();
         myMemeChart = new Chart(memeChartCanvas, chartConfig);
 
         resultsDiv.style.display = 'block';
