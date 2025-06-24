@@ -1,4 +1,4 @@
-// 1단계: 차량의 사실 정보만 요청하는 프롬프트 (정확성 요구)
+// 1단계: 차량의 사실 정보만 요청하는 프롬프트 (한글 수정, Temperature 0.1)
 const createCarIdentificationRequest = (base64Image) => ({
     "contents": [{
         "parts": [
@@ -28,11 +28,11 @@ const createCarIdentificationRequest = (base64Image) => ({
     }],
     "generationConfig": {
         "response_mime_type": "application/json",
-        "temperature": 0.1 // 사실 확인을 위해 매우 낮은 temperature 설정
+        "temperature": 0.1
     }
 });
 
-// 2단계: 식별된 차종을 바탕으로 페르소나 분석을 요청하는 프롬프트 (창의성 요구)
+// 2단계: 식별된 차종을 바탕으로 페르소나 분석을 요청하는 프롬프트 (Temperature 0.8)
 const createPersonaAnalysisRequest = (carModel) => ({
     "contents": [{
         "parts": [
@@ -70,10 +70,9 @@ const createPersonaAnalysisRequest = (carModel) => ({
     }],
     "generationConfig": {
         "response_mime_type": "application/json",
-        "temperature": 0.8 // 창의적인 분석을 위해 높은 temperature 설정
+        "temperature": 0.8
     }
 });
-
 
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
@@ -94,13 +93,11 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ error: '이미지 데이터가 없습니다.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         }
         
-        // ⭐️ 1단계(Pro)와 2단계(Flash)를 위한 API URL을 각각 정의합니다.
-        const proApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${geminiApiKey}`;
-        const flashApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
+        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
 
-        // --- 1단계: 차량 정보 식별 API 호출 (Pro 모델 사용) ---
+        // --- 1단계: 차량 정보 식별 API 호출 ---
         const identificationRequest = createCarIdentificationRequest(image);
-        const identificationResponse = await fetch(proApiUrl, { // ⭐️ proApiUrl 사용
+        const identificationResponse = await fetch(geminiApiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(identificationRequest),
@@ -120,9 +117,9 @@ export async function onRequest(context) {
         
         const identifiedCarModel = identificationJson.car_candidates[0].model;
 
-        // --- 2단계: 페르소나 분석 API 호출 (Flash 모델 사용) ---
+        // --- 2단계: 페르소나 분석 API 호출 ---
         const personaRequest = createPersonaAnalysisRequest(identifiedCarModel);
-        const personaResponse = await fetch(flashApiUrl, { // ⭐️ flashApiUrl 사용
+        const personaResponse = await fetch(geminiApiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(personaRequest),
