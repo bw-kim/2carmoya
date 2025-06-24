@@ -1,11 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 페이지 및 버튼 DOM 요소는 이전과 동일
+    // 페이지 DOM 요소
     const mainPage = document.getElementById('main-page');
     const uploadPage = document.getElementById('upload-page');
     const resultPage = document.getElementById('result-page');
+
+    // 버튼 DOM 요소
     const startAnalysisButton = document.getElementById('start-analysis-button');
     const backToMainButton = document.getElementById('back-to-main-button');
     const resetButton = document.getElementById('reset-button');
+    
+    // 업로드 및 결과 표시 관련 DOM 요소
     const imageUpload = document.getElementById('image-upload');
     const imagePreview = document.getElementById('image-preview');
     const loaderWrapper = document.getElementById('loader-wrapper');
@@ -21,17 +25,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let myMemeChart = null;
     let loadingInterval = null;
 
-    // 페이지 전환 로직은 이전과 동일
-    startAnalysisButton.addEventListener('click', () => { mainPage.style.display = 'none'; uploadPage.style.display = 'block'; });
-    backToMainButton.addEventListener('click', () => { uploadPage.style.display = 'none'; mainPage.style.display = 'block'; });
+    // --- 페이지 전환 로직 ---
+    startAnalysisButton.addEventListener('click', () => {
+        mainPage.style.display = 'none';
+        uploadPage.style.display = 'block';
+    });
+    
+    backToMainButton.addEventListener('click', () => {
+        uploadPage.style.display = 'none';
+        mainPage.style.display = 'block';
+    });
+
     resetButton.addEventListener('click', () => {
         resultPage.style.display = 'none';
         uploadPage.style.display = 'block';
         imageUpload.value = null; 
-        if (myMemeChart) { myMemeChart.destroy(); myMemeChart = null; }
+        
+        if (myMemeChart) {
+            myMemeChart.destroy();
+            myMemeChart = null;
+        }
     });
 
-    // 분석 로직은 이전과 동일
+    // --- 분석 로직 ---
     imageUpload.addEventListener('change', async (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -71,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 로딩, base64, 에러 함수는 이전과 동일
+    // --- 로딩 애니메이션 함수 ---
     function startLoadingAnimation() {
         const messages = [
             "AI가 열심히 머리 굴리는 중...",
@@ -87,23 +103,29 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingText.textContent = messages[messageIndex];
         }, 2000);
     }
-    function stopLoadingAnimation() { clearInterval(loadingInterval); loaderWrapper.style.display = 'none'; }
+
+    function stopLoadingAnimation() {
+        clearInterval(loadingInterval);
+        loaderWrapper.style.display = 'none';
+    }
+
     const toBase64 = (file) => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result);
         reader.onerror = (error) => reject(error);
     });
+
+    // --- 에러 표시 함수 ---
     function displayError(message) {
         resultsDiv.style.display = 'none';
         errorSection.style.display = 'block';
         errorSection.innerHTML = `<p style="color: red; text-align: center;">${message}</p>`;
     }
-
-    // --- ⭐️ 콤마 추가 헬퍼 함수 ⭐️ ---
+    
+    // --- 콤마 추가 헬퍼 함수 ---
     function formatNumberWithCommas(text) {
         if (!text) return '정보 없음';
-        // 정규식을 사용하여 문자열 속 모든 숫자들을 찾아서 콤마를 추가
         return text.replace(/\d+/g, (number) => {
             return parseInt(number).toLocaleString();
         });

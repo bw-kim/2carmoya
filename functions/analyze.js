@@ -1,11 +1,10 @@
-// 1단계: 차량의 사실 정보만 요청하는 프롬프트 (⭐️ 한글로 수정됨 ⭐️)
+// 1단계: 차량의 사실 정보만 요청하는 프롬프트 (한글 수정, Temperature 0.1)
 const createCarIdentificationRequest = (base64Image) => ({
     "contents": [{
         "parts": [
             {
                 "text": `
                 너는 매우 정확한 자동차 식별 전문가야. 이미지 속 자동차를 분석하고, 다음 JSON 형식에 맞춰 사실 정보만 제공해줘. 모든 답변은 반드시 한글로 작성해줘.
-
                 {
                   "is_car": true,
                   "car_candidates": [
@@ -18,7 +17,6 @@ const createCarIdentificationRequest = (base64Image) => ({
                     }
                   ]
                 }
-                
                 ### 지시사항 ###
                 1. 먼저 이미지가 자동차인지 판단해줘. 아니라면 'is_car'를 false로 설정하고 나머지 모든 필드는 null로 채워줘.
                 2. 'confidence'는 너의 추측에 대한 자신감을 0에서 100 사이의 숫자로 표현한 '적중률'이야. 사진이 흐리거나 모호하면 자신감 수치를 솔직하게 낮춰서 표현해야 해. 예시 숫자 95를 그대로 쓰지 마.
@@ -30,11 +28,11 @@ const createCarIdentificationRequest = (base64Image) => ({
     }],
     "generationConfig": {
         "response_mime_type": "application/json",
-        "temperature": 0.1 // 사실 확인을 위해 매우 낮은 temperature 설정
+        "temperature": 0.1
     }
 });
 
-// 2단계: 식별된 차종을 바탕으로 페르소나 분석을 요청하는 프롬프트
+// 2단계: 식별된 차종을 바탕으로 페르소나 분석을 요청하는 프롬프트 (Temperature 0.8)
 const createPersonaAnalysisRequest = (carModel) => ({
     "contents": [{
         "parts": [
@@ -72,10 +70,9 @@ const createPersonaAnalysisRequest = (carModel) => ({
     }],
     "generationConfig": {
         "response_mime_type": "application/json",
-        "temperature": 0.8 // 창의적인 분석을 위해 높은 temperature 설정
+        "temperature": 0.8
     }
 });
-
 
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
@@ -112,7 +109,6 @@ export async function onRequest(context) {
         const identificationText = identificationData.candidates[0].content.parts[0].text;
         const identificationJson = JSON.parse(identificationText);
 
-        // 자동차가 아니거나 식별 실패 시, 그대로 결과 반환
         if (identificationJson.is_car === false || !identificationJson.car_candidates || identificationJson.car_candidates.length === 0) {
             return new Response(JSON.stringify({ analysis: { is_car: false } }), {
                 status: 200, headers: { 'Content-Type': 'application/json' },
@@ -139,7 +135,7 @@ export async function onRequest(context) {
         const finalAnalysis = {
             is_car: true,
             car_candidates: identificationJson.car_candidates,
-            ...personaJson // verdict, lifestyle, vibe, meme_index 포함
+            ...personaJson 
         };
         
         return new Response(JSON.stringify({ analysis: finalAnalysis }), {
