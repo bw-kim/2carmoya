@@ -1,205 +1,27 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #e9ebee; /* 커뮤니티 사이트 느낌의 배경색 */
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    margin: 0;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-#app-container, .community-post {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 700px;
-    text-align: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-h1 {
-    color: #1a73e8;
-    font-size: 2em;
-}
-
-h3 {
-    color: #1a73e8;
-    margin-top: 0;
-    border-bottom: 2px solid #e0e0e0;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
-
-.upload-box {
-    margin: 20px 0;
-}
-
-.upload-label {
-    background-color: #1a73e8;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: inline-block;
-    font-weight: bold;
-    transition: background-color 0.3s;
-    border: none;
-    font-size: 16px;
-    text-align: center;
-    width: auto;
-}
-
-.upload-label:hover {
-    background-color: #1558b3;
-}
-
-.upload-label.secondary {
-    background-color: #6c757d;
-    margin-top: 10px;
-}
-.upload-label.secondary:hover {
-    background-color: #5a6268;
-}
-
-input[type="file"] {
-    display: none;
-}
-
-#image-preview {
-    max-width: 100%;
-    max-height: 400px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-}
-
-.result-section {
-    text-align: left;
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
-    line-height: 1.7;
-    margin-bottom: 20px;
-}
-
-.result-section h4 {
-    margin-top: 0;
-    margin-bottom: 8px;
-    color: #555;
-    font-size: 18px;
-}
-
-.result-section p {
-    margin: 0 0 12px 0;
-    font-size: 16px;
-}
-.car-candidate {
-    border-bottom: 1px dashed #ccc;
-    padding-bottom: 15px;
-    margin-bottom: 15px;
-}
-.car-candidate:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-
-.chart-container {
-    position: relative;
-    height: auto;
-    width: 100%;
-    max-width: 450px;
-    margin: 0 auto;
-}
-
-#reset-button {
-    margin-top: 20px;
-    background-color: #6c757d;
-}
-#reset-button:hover {
-    background-color: #5a6268;
-}
-
-
-.loader {
-    border: 6px solid #f3f3f3;
-    border-top: 6px solid #1a73e8;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
-    display: none;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* --- 메인 페이지 (커뮤니티 글) 스타일 --- */
-.community-post {
-    text-align: left;
-    border: 1px solid #ddd;
-}
-.post-header h2 {
-    font-size: 1.5em;
-    margin: 0 0 10px 0;
-}
-.post-meta {
-    font-size: 0.9em;
-    color: #888;
-    margin-bottom: 20px;
-}
-.post-meta span {
-    margin-right: 15px;
-}
-.post-body img {
-    max-width: 100%;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
+/* --- 수정된 댓글 스타일 --- */
 .post-comments {
     margin-top: 30px;
-    background-color: #f7f7f7;
-    border-radius: 8px;
     padding: 15px;
-}
-.comment {
-    padding: 5px 0;
-    font-size: 1.1em;
-    color: #444;
-    transition: transform 0.3s ease;
-}
-.comment:hover {
-    transform: scale(1.05);
-}
-#start-analysis-button {
-    width: 100%;
-    margin-top: 30px;
-    padding: 15px;
-    font-size: 1.2em;
 }
 
-/* --- 반응형 디자인 미디어 쿼리 --- */
-@media (max-width: 768px) {
-    body { padding: 10px; }
-    #app-container, .community-post { padding: 20px; margin-top: 10px; margin-bottom: 10px; }
-    h1 { font-size: 28px; }
-    .result-section h3 { font-size: 20px; }
-    .result-section p, .result-section h4 { font-size: 15px; }
+.comment {
+    background-color: #f7f7f7;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+    color: #444;
+    text-align: left;
 }
-@media (max-width: 480px) {
-    #app-container, .community-post { padding: 15px; }
-    h1 { font-size: 24px; }
-    .post-header h2 { font-size: 1.2em; }
-    .upload-label, #reset-button, #start-analysis-button { padding: 12px 16px; font-size: 1em; }
+
+.comment.author-comment {
+    background-color: #fff; /* 작성자 댓글은 흰색으로 강조 */
+    border: 1px solid #ddd;
+}
+
+.reply {
+    margin-left: 20px; /* re: 댓글 들여쓰기 */
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
 }
