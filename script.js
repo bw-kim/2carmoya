@@ -1,14 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM 요소 가져오기
-    const uploadContainer = document.getElementById('upload-container');
-    const resultWrapper = document.getElementById('result-wrapper');
+    // 페이지 DOM 요소
+    const mainPage = document.getElementById('main-page');
+    const uploadPage = document.getElementById('upload-page');
+    const resultPage = document.getElementById('result-page');
+
+    // 버튼 DOM 요소
+    const startAnalysisButton = document.getElementById('start-analysis-button');
+    const backToMainButton = document.getElementById('back-to-main-button');
+    const resetButton = document.getElementById('reset-button');
+    
+    // 업로드 및 결과 표시 관련 DOM 요소
     const imageUpload = document.getElementById('image-upload');
     const imagePreview = document.getElementById('image-preview');
     const resultsDiv = document.getElementById('results');
     const loader = document.getElementById('loader');
-    const resetButton = document.getElementById('reset-button');
-    
-    // ⭐️ 기본 정보 섹션 DOM 요소 추가
     const carInfoSection = document.getElementById('car-info-section');
     const lifestyleSection = document.getElementById('lifestyle-section');
     const vibeSection = document.getElementById('vibe-section');
@@ -16,13 +21,35 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let myMemeChart = null;
 
-    // 이미지 업로드 이벤트 리스너
+    // --- 페이지 전환 로직 ---
+    startAnalysisButton.addEventListener('click', () => {
+        mainPage.style.display = 'none';
+        uploadPage.style.display = 'block';
+    });
+    
+    backToMainButton.addEventListener('click', () => {
+        uploadPage.style.display = 'none';
+        mainPage.style.display = 'block';
+    });
+
+    resetButton.addEventListener('click', () => {
+        resultPage.style.display = 'none';
+        uploadPage.style.display = 'block';
+        imageUpload.value = null; 
+        
+        if (myMemeChart) {
+            myMemeChart.destroy();
+            myMemeChart = null;
+        }
+    });
+
+    // --- 분석 로직 ---
     imageUpload.addEventListener('change', async (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
-        uploadContainer.style.display = 'none';
-        resultWrapper.style.display = 'block';
+        uploadPage.style.display = 'none';
+        resultPage.style.display = 'block';
         resultsDiv.style.display = 'none';
         loader.style.display = 'block';
 
@@ -49,21 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             resultsDiv.style.display = 'block';
-            resultsDiv.innerHTML = `<p style="color: red; text-align: center;">오류: ${error.message}</p>`;
+            carInfoSection.innerHTML = `<p style="color: red; text-align: center;">오류: ${error.message}</p>`;
+            lifestyleSection.style.display = 'none';
+            vibeSection.style.display = 'none';
+            document.getElementById('meme-index-section').style.display = 'none';
         } finally {
             loader.style.display = 'none';
-        }
-    });
-
-    // '처음으로' 버튼 이벤트 리스너
-    resetButton.addEventListener('click', () => {
-        uploadContainer.style.display = 'block';
-        resultWrapper.style.display = 'none';
-        imageUpload.value = null; 
-        
-        if (myMemeChart) {
-            myMemeChart.destroy();
-            myMemeChart = null;
         }
     });
 
@@ -74,22 +92,32 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onerror = (error) => reject(error);
     });
 
-    // 분석 결과를 화면에 표시하는 함수
+    // --- 결과 표시 함수 ---
     function displayResults(analysis) {
-        if (!analysis || !analysis.car_info || !analysis.car_info.model) {
-            resultsDiv.innerHTML = `<p style="color: red; text-align: center;">분석 결과를 가져올 수 없습니다.</p>`;
+        if (!analysis || !analysis.car_candidates || analysis.car_candidates.length === 0) {
+            carInfoSection.innerHTML = `<p style="color: red; text-align: center;">분석 결과를 가져올 수 없습니다.</p>`;
             resultsDiv.style.display = 'block';
             return;
         }
+
+        // 모든 섹션을 다시 보이도록 설정
+        lifestyleSection.style.display = 'block';
+        vibeSection.style.display = 'block';
+        document.getElementById('meme-index-section').style.display = 'block';
         
-        // ⭐️ 0. 기본 차량 정보 섹션 채우기 (가장 먼저)
-        const { car_info } = analysis;
-        carInfoSection.innerHTML = `
-            <h3>기본 정보</h3>
-            <p><strong>🚘 차종:</strong> ${car_info.model || '정보 없음'}</p>
-            <p><strong>💰 가격대:</strong> ${car_info.price_range || '정보 없음'}</p>
-            <p><strong>🗓️ 출시 시기:</strong> ${car_info.release_period || '정보 없음'}</p>
-        `;
+        // 0. 기본 차량 정보 (후보군) 섹션 채우기
+        carInfoSection.innerHTML = '<h3>기본 정보 (AI 추정)</h3>';
+        analysis.car_candidates.forEach((car, index) => {
+            carInfoSection.innerHTML += `
+                <div class="car-candidate">
+                    <h4>후보 ${index + 1}</h4>
+                    <p><strong>🚘 차종:</strong> ${car.model || '정보 없음'} (적중률 ${car.confidence || 0}%)</p>
+                    <p><strong>💰 가격대:</strong> ${car.price_range || '정보 없음'}</p>
+                    <p><strong>🗓️ 출시 시기:</strong> ${car.release_period || '정보 없음'}</p>
+                    <p><strong>✨ 특징:</strong> ${car.features || '정보 없음'}</p>
+                </div>
+            `;
+        });
 
         // 1. 라이프스타일 섹션 채우기
         const { lifestyle } = analysis;
@@ -120,8 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const chartData = {
             labels: ['과시력', '양카력', '질투 유발력', '성공력', '패밀리력'],
             datasets: [{
-                // ⭐️ 차트 라벨을 car_info.model 로 변경
-                label: car_info.model || '분석 결과',
+                label: analysis.car_candidates[0].model || '분석 결과',
                 data: [
                     meme_index.show_off || 0,
                     meme_index.reckless || 0,

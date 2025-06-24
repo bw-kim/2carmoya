@@ -9,32 +9,40 @@ const createGeminiRequestBody = (base64Image) => ({
                     이 사진 속 자동차를 기반으로, 아래 JSON 구조에 맞춰서 답변해줘.
 
                     {
-                      "car_info": {
-                        "model": "분석한 자동차 모델명 (세대 포함, 예: 기아 니로 1세대)",
-                        "price_range": "신차 또는 중고차 기준 예상 가격대 (KRW 기준)",
-                        "release_period": "사진 속 모델의 출시 기간 (예: 2016년 ~ 2022년)"
-                      },
+                      "car_candidates": [
+                        {
+                          "model": "가장 유력한 자동차 모델명 (세대 포함)",
+                          "confidence": 95,
+                          "price_range": "신차 또는 중고차 기준 예상 가격대 (KRW)",
+                          "release_period": "해당 모델의 출시 기간",
+                          "features": "이 차의 핵심 특징이나 사람들이 열광하는 포인트"
+                        }
+                      ],
                       "lifestyle": {
-                        "playlist": "이 차에서 흘러나올 것 같은 음악 플레이리스트 (가수, 장르 등 구체적으로)",
+                        "playlist": "이 차에서 흘러나올 것 같은 음악 플레이리스트",
                         "weekend_haunts": "주말에 이 차가 주로 나타날 것 같은 장소",
-                        "instagram_feed": "이 차주 인스타그램에 올라올 법한 게시물 특징 (#해시태그 포함)"
+                        "instagram_feed": "이 차주 인스타그램에 올라올 법한 게시물 특징"
                       },
                       "vibe": {
-                        "fashion_style": "차주가 즐겨 입을 것 같은 패션 스타일 (브랜드, 아이템 등 구체적으로)",
+                        "fashion_style": "차주가 즐겨 입을 것 같은 패션 스타일",
                         "kakaotalk_style": "카톡 말투나 자주 쓸 것 같은 이모티콘 특징",
                         "inner_monologue": "이 차를 본 다른 사람의 솔직한 마음속 한마디"
                       },
                       "meme_index": {
-                        "show_off": "과시력 (남에게 보여주기 위한 성향). 1~5점.",
-                        "reckless": "양카력 (도로에서 왠지 험하게 운전할 것 같은 느낌). 1~5점.",
-                        "jealousy": "질투 유발력 (전 연인이 이 차를 타면 배 아플 것 같은 정도). 1~5점.",
-                        "success": "성공력 (경제적 성공의 아이콘으로 비치는 정도). 1~5점.",
-                        "family": "패밀리력 (가정적인 사람일 것 같은 느낌). 1~5점."
+                        "show_off": "과시력 (1~5점)",
+                        "reckless": "양카력 (1~5점)",
+                        "jealousy": "질투 유발력 (1~5점)",
+                        "success": "성공력 (1~5점)",
+                        "family": "패밀리력 (1~5점)"
                       }
                     }
 
-                    먼저 'car_info' 섹션에 정확한 정보를 채워줘. 그 다음에 'lifestyle', 'vibe', 'meme_index'를 창의적으로 분석해줘.
-                    만약 자동차 식별이 불가능하다면, car_info.model 필드에 "차종을 식별할 수 없습니다" 라고 답변하고 나머지 모든 필드는 null로 채워줘.
+                    ### 지시사항 ###
+                    1.  먼저 사진 속 자동차를 분석해서 가장 유력한 후보 1개를 'car_candidates' 배열에 담아줘.
+                    2.  'confidence'는 너의 추측에 대한 자신감을 0에서 100 사이의 숫자로 표현한 '적중률'이야.
+                    3.  만약 1순위 후보의 'confidence'가 90 미만이라면, 2순위 후보를 배열에 추가해줘.
+                    4.  그 후 'lifestyle', 'vibe', 'meme_index'를 창의적으로 분석해줘. 이 분석은 1순위 후보를 기준으로 해줘.
+                    5.  자동차 식별이 불가능하다면, 'car_candidates' 배열에 confidence가 0인 객체 하나만 넣고 나머지 모든 필드는 null로 채워줘.
                     `
                 },
                 {
@@ -52,7 +60,6 @@ const createGeminiRequestBody = (base64Image) => ({
 });
 
 
-// onRequest 함수는 이전과 동일하게 Flash 모델을 사용합니다.
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
         return new Response('잘못된 요청입니다.', { status: 405 });

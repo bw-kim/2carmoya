@@ -3,39 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전여친의 새 남자친구 차 분석기</title>
+    <title>그 차... 알아? | 전여친 현남친 차 분석기</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div id="app-container">
-        <h1>전여친의 새 차... 아니 새 남자친구?</h1>
-        <p>그녀의 인스타에서 낯선 자동차 사진을 발견했다.<br>그 차가, 그리고 그 사람이 궁금하다면 조용히 물어보세요.</p>
 
-        <div class="upload-box" id="upload-container">
-            <label for="image-upload" class="upload-label">
-                📷 그 사진, 여기 올려보기
-            </label>
-            <input type="file" id="image-upload" accept="image/*">
-        </div>
-
-        <div id="result-wrapper" style="display:none;">
-            <img id="image-preview" src="#" alt="업로드된 이미지 미리보기" />
-            <div id="loader" class="loader"></div>
-            
-            <div id="results">
-                <div class="result-section" id="car-info-section"></div>
-                <div class="result-section" id="lifestyle-section"></div>
-                <div class="result-section" id="vibe-section"></div>
-                <div class="result-section" id="meme-index-section">
-                    <h3>&lt;전여친 현남친 력(力) 지수&gt;</h3>
-                    <div class="chart-container">
-                        <canvas id="memeChart"></canvas>
-                    </div>
+    <div id="main-page">
+        <div class="community-post">
+            <div class="post-header">
+                <h2>형들 친구 인스타에 새로 올라온 차 사진인데 기종 뭔지 알 수 있을까?</h2>
+                <div class="post-meta">
+                    <span>익명의 유저</span>
+                    <span>방금 전</span>
                 </div>
             </div>
+            <div class="post-body">
+                <img src="https://i.ibb.co/L5r9M0q/car-sample.jpg" alt="커뮤니티에 올라온 자동차 사진 예시">
+                <p>친구가 올린 건 아니고... 전... 그냥 친구요. ㅎㅎ<br>차가 좋아보여서 순수하게 궁금해서요!</p>
+            </div>
+            <div class="post-comments">
+                <div class="comment" style="margin-left: 10px;"><b>익명1:</b> 전</div>
+                <div class="comment" style="margin-left: 30px;"><b>익명2:</b> &nbsp;&nbsp;&nbsp;여</div>
+                <div class="comment" style="margin-left: 50px;"><b>익명3:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;친</div>
+                <div class="comment" style="margin-left: 70px;"><b>익명4:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;의</div>
+                <div class="comment" style="margin-left: 50px;"><b>익명5:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;현</div>
+                <div class="comment" style="margin-left: 30px;"><b>익명6:</b> &nbsp;&nbsp;&nbsp;남</div>
+                <div class="comment" style="margin-left: 10px;"><b>익명7:</b> 친</div>
+                <div class="comment" style="margin-left: 0px;"><b>익명8:</b> 차</div>
+            </div>
+            <button id="start-analysis-button" class="upload-label">...혹시 내 얘긴가? (분석 시작)</button>
+        </div>
+    </div>
 
-            <button id="reset-button" class="upload-label">다른 사진으로 다시 물어보기</button>
+    <div id="upload-page" style="display:none;">
+        <div id="app-container">
+            <h1>자, 그 사진... 올려봐</h1>
+            <p>AI가 조용히, 그리고 날카롭게 알려줄게.<br>그 차가 어떤 차인지, 그리고 그 사람이 어떤 사람인지.</p>
+
+            <div class="upload-box" id="upload-container">
+                <label for="image-upload" class="upload-label">
+                    📷 사진 선택하기
+                </label>
+                <input type="file" id="image-upload" accept="image/*">
+            </div>
+             <button id="back-to-main-button" class="upload-label secondary">메인으로 돌아가기</button>
+        </div>
+    </div>
+
+    <div id="result-page" style="display:none;">
+        <div id="app-container">
+            <h1>AI 분석 결과</h1>
+            <div id="result-wrapper">
+                <img id="image-preview" src="#" alt="업로드된 이미지 미리보기" />
+                <div id="loader" class="loader"></div>
+                <div id="results">
+                    <div class="result-section" id="car-info-section"></div>
+                    <div class="result-section" id="lifestyle-section"></div>
+                    <div class="result-section" id="vibe-section"></div>
+                    <div class="result-section" id="meme-index-section">
+                        <h3>&lt;전여친 현남친 력(力) 지수&gt;</h3>
+                        <div class="chart-container">
+                            <canvas id="memeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <button id="reset-button" class="upload-label">다른 사진으로 분석하기</button>
+            </div>
         </div>
     </div>
 
