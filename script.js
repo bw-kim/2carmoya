@@ -90,11 +90,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 로딩 애니메이션 함수 ---
     function startLoadingAnimation() {
         const messages = [
-            "전여친 인스타 염탐 중...",
-            "AI가 현남친의 재력을 분석 중입니다...",
-            "차량 번호판으로 신상 터는 중... (농담입니다😉)",
-            "블랙박스 영상 확인 중... 혹시 뭐 찍힌 거 없죠?",
-            "심장 부여잡고 기다리는 중..."
+            "AI가 열심히 머리 굴리는 중...",
+            "사진 속 먼지 한 톨까지 분석하고 있어요...",
+            "자동차의 혈통을 조회하는 중입니다...",
+            "차주의 취향을 섬세하게 유추하고 있습니다...",
+            "거의 다 됐어요! 조금만 더 기다려주세요..."
         ];
         let messageIndex = 0;
         loadingText.textContent = messages[messageIndex];
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsDiv.style.display = 'none';
             errorSection.style.display = 'block';
             errorSection.innerHTML = `
-                <img src="https://i.ibb.co/L8yT6T8/undraw-Question-re-1fy7.png" alt="질문하는 그림" style="max-width: 150px; margin-bottom: 15px;">
+                <img src="https://i.ibb.co/L8yT6T8/undraw-Question-re-1fy7.png" alt="질문하는 그림" style="max-width: 120px; margin-bottom: 15px; opacity: 0.8;">
                 <h4>이건... 차가 아닌데요?</h4>
                 <p>자동차 사진을 올려주셔야<br>전여친의 현남친을 분석할 수 있어요!</p>
             `;
@@ -158,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. 기본 차량 정보 (후보군) 섹션
         const { car_candidates } = analysis;
         carInfoSection.innerHTML = '<h3>기본 정보 (AI 추정)</h3>';
-        // 이전에 추가된 내용이 없도록 초기화
         let carInfoContent = '';
         car_candidates.forEach((car, index) => {
             const candidateHeader = car_candidates.length > 1 ? `<h4>후보 ${index + 1}</h4>` : '';
@@ -213,12 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     meme_index.family || 0
                 ],
                 fill: true,
-                backgroundColor: 'rgba(26, 115, 232, 0.2)',
-                borderColor: 'rgb(26, 115, 232)',
-                pointBackgroundColor: 'rgb(26, 115, 232)',
+                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                borderColor: 'rgb(52, 152, 219)',
+                pointBackgroundColor: 'rgb(52, 152, 219)',
                 pointBorderColor: '#fff',
                 pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgb(26, 115, 232)'
+                pointHoverBorderColor: 'rgb(52, 152, 219)'
             }]
         };
 
