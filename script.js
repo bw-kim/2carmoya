@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingText = document.getElementById('loading-text');
     const resultsDiv = document.getElementById('results');
     const errorSection = document.getElementById('error-section');
-    const finalVerdictSection = document.getElementById('final-verdict-section');
+    const verdictSection = document.getElementById('verdict-section');
     const carInfoSection = document.getElementById('car-info-section');
     const lifestyleSection = document.getElementById('lifestyle-section');
     const vibeSection = document.getElementById('vibe-section');
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayError(message) {
         resultsDiv.style.display = 'none';
         errorSection.style.display = 'block';
-        errorSection.innerHTML = `<p style="color: red;">${message}</p>`;
+        errorSection.innerHTML = `<p style="color: red; text-align: center;">${message}</p>`;
     }
 
     // --- 결과 표시 함수 ---
@@ -135,22 +135,38 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsDiv.style.display = 'none';
             errorSection.style.display = 'block';
             errorSection.innerHTML = `
-                <img src="https://i.ibb.co/L8yT6T8/undraw-Question-re-1fy7.png" alt="질문하는 그림">
+                <img src="https://i.ibb.co/L8yT6T8/undraw-Question-re-1fy7.png" alt="질문하는 그림" style="max-width: 150px; margin-bottom: 15px;">
                 <h4>이건... 차가 아닌데요?</h4>
                 <p>자동차 사진을 올려주셔야<br>전여친의 현남친을 분석할 수 있어요!</p>
             `;
             return;
         }
 
-        // 최종 판결 섹션
-        finalVerdictSection.innerHTML = `"${analysis.final_verdict || '분석 완료!'}"`;
+        // 모든 섹션을 다시 보이도록 초기화
+        errorSection.style.display = 'none';
+        document.querySelectorAll('.result-section').forEach(el => el.style.display = 'block');
+        
+        // 1. 최종 판결 섹션
+        const { verdict } = analysis;
+        verdictSection.innerHTML = `
+            <h4>AI의 한줄평</h4>
+            <p>"${verdict.car_review || '한마디로 좋은 차!'}"</p>
+            <h4>그래서 이 사람은...</h4>
+            <p>${verdict.owner_wealth_hint || '만만치 않은 상대입니다.'}</p>
+        `;
+        verdictSection.classList.add('final-verdict-style');
 
-        // 기본 차량 정보 (후보군) 섹션
+
+        // 2. 기본 차량 정보 (후보군) 섹션
+        const { car_candidates } = analysis;
         carInfoSection.innerHTML = '<h3>기본 정보 (AI 추정)</h3>';
-        analysis.car_candidates.forEach((car, index) => {
+        
+        car_candidates.forEach((car, index) => {
+            const candidateHeader = car_candidates.length > 1 ? `<h4>후보 ${index + 1}</h4>` : '';
+            
             carInfoSection.innerHTML += `
                 <div class="car-candidate">
-                    <h4>후보 ${index + 1}</h4>
+                    ${candidateHeader}
                     <p><strong>🚘 차종:</strong> ${car.model || '정보 없음'} (적중률 ${car.confidence || 0}%)</p>
                     <p><strong>💰 가격대:</strong> ${car.price_range || '정보 없음'}</p>
                     <p><strong>🗓️ 출시 시기:</strong> ${car.release_period || '정보 없음'}</p>
@@ -158,38 +174,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         });
-
-        // 라이프스타일 섹션
+        
+        // 3. 라이프스타일 섹션
+        const { lifestyle } = analysis;
         lifestyleSection.innerHTML = `
             <h3>1. 라이프스타일 & 취미</h3>
             <h4>🎵 플레이리스트</h4>
-            <p>${analysis.lifestyle.playlist || '정보 없음'}</p>
+            <p>${lifestyle.playlist || '정보 없음'}</p>
             <h4>📍 주말 출몰 지역</h4>
-            <p>${analysis.lifestyle.weekend_haunts || '정보 없음'}</p>
+            <p>${lifestyle.weekend_haunts || '정보 없음'}</p>
             <h4>📱 인스타그램 피드</h4>
-            <p>${analysis.lifestyle.instagram_feed || '정보 없음'}</p>
+            <p>${lifestyle.instagram_feed || '정보 없음'}</p>
         `;
 
-        // 감성 & 디테일 섹션
+        // 4. 감성 & 디테일 섹션
+        const { vibe } = analysis;
         vibeSection.innerHTML = `
             <h3>2. 감성 & 디테일</h3>
             <h4>👕 '현남친' 패션 스타일</h4>
-            <p>${analysis.vibe.fashion_style || '정보 없음'}</p>
+            <p>${vibe.fashion_style || '정보 없음'}</p>
             <h4>👃 차량 방향제 취향</h4>
-            <p>${analysis.vibe.car_scent || '정보 없음'}</p>
+            <p>${vibe.car_scent || '정보 없음'}</p>
             <h4>☕️ 자주 마실 것 같은 커피</h4>
-            <p>${analysis.vibe.go_to_coffee || '정보 없음'}</p>
+            <p>${vibe.go_to_coffee || '정보 없음'}</p>
         `;
 
-        // 밈 지수 차트
+        // 5. 밈 지수 차트
         const { meme_index } = analysis;
         const chartData = {
             labels: ['과시력', '양카력', '질투 유발력', '성공력', '패밀리력'],
             datasets: [{
                 label: analysis.car_candidates[0].model || '분석 결과',
                 data: [
-                    meme_index.show_off || 0, meme_index.reckless || 0,
-                    meme_index.jealousy || 0, meme_index.success || 0, meme_index.family || 0
+                    meme_index.show_off || 0,
+                    meme_index.reckless || 0,
+                    meme_index.jealousy || 0,
+                    meme_index.success || 0,
+                    meme_index.family || 0
                 ],
                 fill: true,
                 backgroundColor: 'rgba(26, 115, 232, 0.2)',
@@ -200,14 +221,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 pointHoverBorderColor: 'rgb(26, 115, 232)'
             }]
         };
+
         const chartConfig = {
-            type: 'radar', data: chartData,
+            type: 'radar',
+            data: chartData,
             options: {
                 elements: { line: { borderWidth: 3 } },
                 scales: {
                     r: {
                         angleLines: { display: true },
-                        suggestedMin: 0, suggestedMax: 5,
+                        suggestedMin: 0,
+                        suggestedMax: 5,
                         pointLabels: { font: { size: 14, weight: 'bold' } },
                         ticks: { stepSize: 1 }
                     }
@@ -216,7 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        if (myMemeChart) myMemeChart.destroy();
+        if (myMemeChart) {
+            myMemeChart.destroy();
+        }
         myMemeChart = new Chart(memeChartCanvas, chartConfig);
 
         resultsDiv.style.display = 'block';

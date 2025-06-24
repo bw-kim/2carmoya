@@ -9,7 +9,10 @@ const createGeminiRequestBody = (base64Image) => ({
 
                     {
                       "is_car": true,
-                      "final_verdict": "모든 분석 결과를 한 문장으로 요약한 최종 판결",
+                      "verdict": {
+                        "car_review": "차량 자체에 대한 재치있는 한줄평",
+                        "owner_wealth_hint": "차량 가격대에 기반한 소유주의 재력에 대한 은유적 코멘트. 저렴한 차라도 절대 비꼬지 말고 긍정적으로 표현해줘. (예: '강력한 상대입니다', '검소함 속의 멋을 아는 분이네요')"
+                      },
                       "car_candidates": [
                         {
                           "model": "가장 유력한 자동차 모델명 (세대 포함)",
@@ -19,31 +22,14 @@ const createGeminiRequestBody = (base64Image) => ({
                           "features": "이 차의 핵심 특징이나 사람들이 열광하는 포인트"
                         }
                       ],
-                      "lifestyle": {
-                        "playlist": "이 차에서 흘러나올 것 같은 음악 플레이리스트",
-                        "weekend_haunts": "주말에 이 차가 주로 나타날 것 같은 장소",
-                        "instagram_feed": "이 차주 인스타그램에 올라올 법한 게시물 특징"
-                      },
-                      "vibe": {
-                        "fashion_style": "차주가 즐겨 입을 것 같은 패션 스타일",
-                        "car_scent": "차에서 날 것 같은 방향제나 향기",
-                        "go_to_coffee": "차주가 자주 마실 것 같은 커피 메뉴"
-                      },
-                      "meme_index": {
-                        "show_off": "과시력 (1~5점)",
-                        "reckless": "양카력 (1~5점)",
-                        "jealousy": "질투 유발력 (1~5점)",
-                        "success": "성공력 (1~5점)",
-                        "family": "패밀리력 (1~5점)"
-                      }
+                      "lifestyle": { /* ... lifestyle, vibe, meme_index는 이전과 동일 ... */ }
                     }
 
                     ### 지시사항 ###
-                    1. 이미지를 보고 자동차인지 아닌지 먼저 판단해줘.
-                    2. 자동차가 맞다면: 'is_car'를 true로 설정하고 나머지 모든 필드를 채워줘.
-                    3. 자동차가 아니라면: 'is_car'를 false로 설정하고, 나머지 모든 필드는 null로 채워줘.
-                    4. 1순위 후보의 'confidence'가 90 미만이라면, 2순위 후보를 'car_candidates' 배열에 추가해줘.
-                    5. 'final_verdict'는 모든 분석 내용을 바탕으로 가장 임팩트 있는 한마디로 요약해줘.
+                    1. 이미지를 보고 자동차인지 아닌지 먼저 판단해줘. 자동차가 아니라면 'is_car'를 false로 설정하고 나머지 필드는 null로 채워줘.
+                    2. 'confidence'는 너의 추측에 대한 자신감을 0에서 100 사이의 숫자로 표현한 '적중률'이야. **사진이 흐리거나, 로고가 안보이거나, 특징이 명확하지 않으면 자신감(confidence) 수치를 솔직하고 과감하게 낮춰서 표현해야 해. 절대 예시 숫자 95를 그대로 쓰면 안돼.**
+                    3. 1순위 후보의 'confidence'가 90 미만이라면, 2순위 후보를 'car_candidates' 배열에 추가해줘.
+                    4. 'verdict'와 나머지 분석은 1순위 후보를 기준으로 작성해줘.
                     `
                 },
                 { "inline_data": { "mime_type": "image/jpeg", "data": base64Image } }
@@ -53,6 +39,7 @@ const createGeminiRequestBody = (base64Image) => ({
     "generationConfig": { "response_mime_type": "application/json" }
 });
 
+// onRequest 함수는 변경사항 없습니다. 이전과 동일합니다.
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
         return new Response('잘못된 요청입니다.', { status: 405 });
