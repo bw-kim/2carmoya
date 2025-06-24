@@ -47,7 +47,6 @@ const createGeminiRequestBody = (base64Image) => ({
 });
 
 
-// onRequest 함수는 이전과 동일하게 유지합니다.
 export async function onRequest(context) {
     if (context.request.method !== 'POST') {
         return new Response('잘못된 요청입니다.', { status: 405 });
@@ -67,7 +66,8 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ error: '이미지 데이터가 없습니다.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         }
         
-        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${geminiApiKey}`;
+        // ⭐️ 모델을 gemini-1.5-flash-latest 로 변경했습니다 ⭐️
+        const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
         const requestBody = createGeminiRequestBody(image);
 
         const geminiResponse = await fetch(geminiApiUrl, {
