@@ -1,4 +1,6 @@
-// 1단계: 차량의 사실 정보만 요청하는 프롬프트 (한글 수정, Temperature 0.1)
+// analyze.js
+
+// 1단계: 차량의 사실 정보만 요청하는 프롬프트 (간결화, Temperature 0.1)
 const createCarIdentificationRequest = (base64Image) => ({
     "contents": [{
         "parts": [
@@ -9,18 +11,18 @@ const createCarIdentificationRequest = (base64Image) => ({
                   "is_car": true,
                   "car_candidates": [
                     {
-                      "model": "가장 유력한 자동차 모델명 (세대 포함)",
-                      "confidence": 95,
-                      "price_range": "예상 가격대 (KRW 기준)",
-                      "release_period": "해당 모델의 출시 기간",
-                      "features": "이 차의 핵심 특징"
+                      "model": "string",
+                      "confidence": "number",
+                      "price_range": "string",
+                      "release_period": "string",
+                      "features": "string"
                     }
                   ]
                 }
                 ### 지시사항 ###
-                1. 먼저 이미지가 자동차인지 판단해줘. 아니라면 'is_car'를 false로 설정하고 나머지 모든 필드는 null로 채워줘.
-                2. 'confidence'는 너의 추측에 대한 자신감을 0에서 100 사이의 숫자로 표현한 '적중률'이야. 사진이 흐리거나 모호하면 자신감 수치를 솔직하게 낮춰서 표현해야 해. 예시 숫자 95를 그대로 쓰지 마.
-                3. 1순위 후보의 'confidence'가 90 미만이라면, 2순위 후보를 'car_candidates' 배열에 추가해줘.
+                1. 이미지가 자동차인지 판단 후 'is_car' 설정. 아니라면 모든 필드 null.
+                2. 'confidence'는 추측에 대한 자신감을 0-100 숫자로 표현. 사진 모호 시 낮게 설정.
+                3. 1순위 'confidence'가 90 미만이면 2순위 후보 추가.
                 `
             },
             { "inline_data": { "mime_type": "image/jpeg", "data": base64Image } }
@@ -43,25 +45,25 @@ const createPersonaAnalysisRequest = (carModel) => ({
                 
                 {
                   "verdict": {
-                    "car_review": "차량 자체에 대한 재치있는 한줄평",
-                    "owner_wealth_hint": "차량 가격대에 기반한 소유주의 재력에 대한 은유적 코멘트. 저렴한 차라도 절대 비꼬지 말고 긍정적으로 표현해줘."
+                    "car_review": "string",
+                    "owner_wealth_hint": "string"
                   },
                   "lifestyle": {
-                    "playlist": "이 차에서 흘러나올 것 같은 음악 플레이리스트",
-                    "weekend_haunts": "주말에 이 차가 주로 나타날 것 같은 장소",
-                    "instagram_feed": "이 차주 인스타그램에 올라올 법한 게시물 특징"
+                    "playlist": "string",
+                    "weekend_haunts": "string",
+                    "instagram_feed": "string"
                   },
                   "vibe": {
-                    "fashion_style": "차주가 즐겨 입을 것 같은 패션 스타일",
-                    "car_scent": "차에서 날 것 같은 방향제나 향기",
-                    "go_to_coffee": "차주가 자주 마실 것 같은 커피 메뉴"
+                    "fashion_style": "string",
+                    "car_scent": "string",
+                    "go_to_coffee": "string"
                   },
                   "meme_index": {
-                    "show_off": "과시력 (1~5점)",
-                    "reckless": "양카력 (1~5점)",
-                    "jealousy": "질투 유발력 (1~5점)",
-                    "success": "성공력 (1~5점)",
-                    "family": "패밀리력 (1~5점)"
+                    "show_off": "number",
+                    "reckless": "number",
+                    "jealousy": "number",
+                    "success": "number",
+                    "family": "number"
                   }
                 }
                 `
@@ -93,6 +95,7 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ error: '이미지 데이터가 없습니다.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
         }
         
+        // 모든 API 호출에 gemini-1.5-flash-latest 모델 사용
         const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
 
         // --- 1단계: 차량 정보 식별 API 호출 ---
