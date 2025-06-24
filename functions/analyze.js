@@ -1,28 +1,28 @@
-// 1단계: 차량의 사실 정보만 요청하는 프롬프트
+// 1단계: 차량의 사실 정보만 요청하는 프롬프트 (⭐️ 한글로 수정됨 ⭐️)
 const createCarIdentificationRequest = (base64Image) => ({
     "contents": [{
         "parts": [
             {
                 "text": `
-                You are a precise vehicle identification expert. Analyze the car in the image and provide only the factual information in the following JSON format.
+                너는 매우 정확한 자동차 식별 전문가야. 이미지 속 자동차를 분석하고, 다음 JSON 형식에 맞춰 사실 정보만 제공해줘. 모든 답변은 반드시 한글로 작성해줘.
 
                 {
                   "is_car": true,
                   "car_candidates": [
                     {
-                      "model": "The most likely car model name (including generation)",
+                      "model": "가장 유력한 자동차 모델명 (세대 포함)",
                       "confidence": 95,
-                      "price_range": "Estimated price range in KRW",
-                      "release_period": "Release period of the model",
-                      "features": "Key features of this car"
+                      "price_range": "예상 가격대 (KRW 기준)",
+                      "release_period": "해당 모델의 출시 기간",
+                      "features": "이 차의 핵심 특징"
                     }
                   ]
                 }
                 
-                ### INSTRUCTIONS ###
-                1. First, determine if the image contains a car. If not, set 'is_car' to false and all other fields to null.
-                2. 'confidence' is your certainty percentage (0-100). You MUST be honest and lower the score if the image is blurry or ambiguous. Do not just use the example number 95.
-                3. If your confidence for the first candidate is below 90, add a second candidate to the 'car_candidates' array.
+                ### 지시사항 ###
+                1. 먼저 이미지가 자동차인지 판단해줘. 아니라면 'is_car'를 false로 설정하고 나머지 모든 필드는 null로 채워줘.
+                2. 'confidence'는 너의 추측에 대한 자신감을 0에서 100 사이의 숫자로 표현한 '적중률'이야. 사진이 흐리거나 모호하면 자신감 수치를 솔직하게 낮춰서 표현해야 해. 예시 숫자 95를 그대로 쓰지 마.
+                3. 1순위 후보의 'confidence'가 90 미만이라면, 2순위 후보를 'car_candidates' 배열에 추가해줘.
                 `
             },
             { "inline_data": { "mime_type": "image/jpeg", "data": base64Image } }
@@ -30,7 +30,7 @@ const createCarIdentificationRequest = (base64Image) => ({
     }],
     "generationConfig": {
         "response_mime_type": "application/json",
-        "temperature": 0.1 // ⭐️ 사실 확인을 위해 매우 낮은 temperature 설정
+        "temperature": 0.1 // 사실 확인을 위해 매우 낮은 temperature 설정
     }
 });
 
@@ -72,7 +72,7 @@ const createPersonaAnalysisRequest = (carModel) => ({
     }],
     "generationConfig": {
         "response_mime_type": "application/json",
-        "temperature": 0.8 // ⭐️ 창의적인 분석을 위해 높은 temperature 설정
+        "temperature": 0.8 // 창의적인 분석을 위해 높은 temperature 설정
     }
 });
 
