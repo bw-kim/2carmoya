@@ -1,15 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 페이지 DOM 요소
+    // 페이지 및 버튼 DOM 요소는 이전과 동일
     const mainPage = document.getElementById('main-page');
     const uploadPage = document.getElementById('upload-page');
     const resultPage = document.getElementById('result-page');
-
-    // 버튼 DOM 요소
     const startAnalysisButton = document.getElementById('start-analysis-button');
     const backToMainButton = document.getElementById('back-to-main-button');
     const resetButton = document.getElementById('reset-button');
-    
-    // 업로드 및 결과 표시 관련 DOM 요소
     const imageUpload = document.getElementById('image-upload');
     const imagePreview = document.getElementById('image-preview');
     const loaderWrapper = document.getElementById('loader-wrapper');
@@ -25,29 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let myMemeChart = null;
     let loadingInterval = null;
 
-    // --- 페이지 전환 로직 ---
-    startAnalysisButton.addEventListener('click', () => {
-        mainPage.style.display = 'none';
-        uploadPage.style.display = 'block';
-    });
-    
-    backToMainButton.addEventListener('click', () => {
-        uploadPage.style.display = 'none';
-        mainPage.style.display = 'block';
-    });
-
+    // 페이지 전환 로직은 이전과 동일
+    startAnalysisButton.addEventListener('click', () => { mainPage.style.display = 'none'; uploadPage.style.display = 'block'; });
+    backToMainButton.addEventListener('click', () => { uploadPage.style.display = 'none'; mainPage.style.display = 'block'; });
     resetButton.addEventListener('click', () => {
         resultPage.style.display = 'none';
         uploadPage.style.display = 'block';
         imageUpload.value = null; 
-        
-        if (myMemeChart) {
-            myMemeChart.destroy();
-            myMemeChart = null;
-        }
+        if (myMemeChart) { myMemeChart.destroy(); myMemeChart = null; }
     });
 
-    // --- 분석 로직 ---
+    // 분석 로직은 이전과 동일
     imageUpload.addEventListener('change', async (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -87,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 로딩 애니메이션 함수 ---
+    // 로딩, base64, 에러 함수는 이전과 동일
     function startLoadingAnimation() {
         const messages = [
             "AI가 열심히 머리 굴리는 중...",
@@ -103,24 +87,26 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingText.textContent = messages[messageIndex];
         }, 2000);
     }
-
-    function stopLoadingAnimation() {
-        clearInterval(loadingInterval);
-        loaderWrapper.style.display = 'none';
-    }
-
+    function stopLoadingAnimation() { clearInterval(loadingInterval); loaderWrapper.style.display = 'none'; }
     const toBase64 = (file) => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result);
         reader.onerror = (error) => reject(error);
     });
-
-    // --- 에러 표시 함수 ---
     function displayError(message) {
         resultsDiv.style.display = 'none';
         errorSection.style.display = 'block';
         errorSection.innerHTML = `<p style="color: red; text-align: center;">${message}</p>`;
+    }
+
+    // --- ⭐️ 콤마 추가 헬퍼 함수 ⭐️ ---
+    function formatNumberWithCommas(text) {
+        if (!text) return '정보 없음';
+        // 정규식을 사용하여 문자열 속 모든 숫자들을 찾아서 콤마를 추가
+        return text.replace(/\d+/g, (number) => {
+            return parseInt(number).toLocaleString();
+        });
     }
 
     // --- 결과 표시 함수 ---
@@ -130,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 자동차가 아닌 사진 처리
         if (analysis.is_car === false) {
             resultsDiv.style.display = 'none';
             errorSection.style.display = 'block';
@@ -142,12 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 모든 섹션을 다시 보이도록 초기화
         errorSection.style.display = 'none';
         document.querySelectorAll('.result-section').forEach(el => el.style.display = 'block');
         
-        // 1. 최종 판결 섹션
-        const { verdict } = analysis;
+        const { verdict, car_candidates, lifestyle, vibe, meme_index } = analysis;
+        
         verdictSection.innerHTML = `
             <h4>AI의 한줄평</h4>
             <p>"${verdict.car_review || '한마디로 좋은 차!'}"</p>
@@ -155,18 +139,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>${verdict.owner_wealth_hint || '만만치 않은 상대입니다.'}</p>
         `;
 
-        // 2. 기본 차량 정보 (후보군) 섹션
-        const { car_candidates } = analysis;
         carInfoSection.innerHTML = '<h3>기본 정보 (AI 추정)</h3>';
         let carInfoContent = '';
         car_candidates.forEach((car, index) => {
             const candidateHeader = car_candidates.length > 1 ? `<h4>후보 ${index + 1}</h4>` : '';
-            
             carInfoContent += `
                 <div class="car-candidate">
                     ${candidateHeader}
                     <p><strong>🚘 차종:</strong> ${car.model || '정보 없음'} (적중률 ${car.confidence || 0}%)</p>
-                    <p><strong>💰 가격대:</strong> ${car.price_range || '정보 없음'}</p>
+                    <p><strong>💰 가격대:</strong> ${formatNumberWithCommas(car.price_range)}</p>
                     <p><strong>🗓️ 출시 시기:</strong> ${car.release_period || '정보 없음'}</p>
                     <p><strong>✨ 특징:</strong> ${car.features || '정보 없음'}</p>
                 </div>
@@ -174,8 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         carInfoSection.innerHTML += carInfoContent;
         
-        // 3. 라이프스타일 섹션
-        const { lifestyle } = analysis;
         lifestyleSection.innerHTML = `
             <h3>1. 라이프스타일 & 취미</h3>
             <h4>🎵 플레이리스트</h4>
@@ -186,8 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>${lifestyle.instagram_feed || '정보 없음'}</p>
         `;
 
-        // 4. 감성 & 디테일 섹션
-        const { vibe } = analysis;
         vibeSection.innerHTML = `
             <h3>2. 감성 & 디테일</h3>
             <h4>👕 '현남친' 패션 스타일</h4>
@@ -198,18 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>${vibe.go_to_coffee || '정보 없음'}</p>
         `;
 
-        // 5. 밈 지수 차트
-        const { meme_index } = analysis;
         const chartData = {
             labels: ['과시력', '양카력', '질투 유발력', '성공력', '패밀리력'],
             datasets: [{
-                label: analysis.car_candidates[0].model || '분석 결과',
+                label: car_candidates[0].model || '분석 결과',
                 data: [
-                    meme_index.show_off || 0,
-                    meme_index.reckless || 0,
-                    meme_index.jealousy || 0,
-                    meme_index.success || 0,
-                    meme_index.family || 0
+                    meme_index.show_off || 0, meme_index.reckless || 0,
+                    meme_index.jealousy || 0, meme_index.success || 0, meme_index.family || 0
                 ],
                 fill: true,
                 backgroundColor: 'rgba(52, 152, 219, 0.2)',
@@ -239,9 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        if (myMemeChart) {
-            myMemeChart.destroy();
-        }
+        if (myMemeChart) { myMemeChart.destroy(); }
         myMemeChart = new Chart(memeChartCanvas, chartConfig);
 
         resultsDiv.style.display = 'block';
